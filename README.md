@@ -29,10 +29,12 @@ If you use our method or code in your research, please consider citing the paper
 
 ```
 @article{Hansen2022tdmpc,
-  title={Temporal Difference Learning for Model Predictive Control},
-  author={Nicklas Hansen and Xiaolong Wang and Hao Su},
-  journal={arXiv preprint arXiv:#},
-  year={2022}
+	title={Temporal Difference Learning for Model Predictive Control},
+	author={Nicklas Hansen and Xiaolong Wang and Hao Su},
+	eprint={2203.04955},
+	archivePrefix={arXiv},
+	primaryClass={cs.LG},
+	year={2022}
 }
 ```
 
