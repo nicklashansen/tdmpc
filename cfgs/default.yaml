@@ -1,0 +1,52 @@
+# environment
+task: quadruped-run
+modality: 'state'
+action_repeat: ???
+discount: 0.99
+episode_length: 1000/${action_repeat}
+train_steps: 500000/${action_repeat}
+
+# planning
+iterations: 6
+num_samples: 512
+num_elites: 64
+mixture_coef: 0.05
+min_std: 0.05
+temperature: 0.5
+momentum: 0.1
+
+# learning
+batch_size: 512
+horizon: 5
+reward_coef: 0.5
+value_coef: 0.1
+consistency_coef: 2
+rho: 0.5
+kappa: 0.1
+lr: 1e-3
+std_schedule: linear(0.5, ${min_std}, 25000)
+horizon_schedule: linear(1, ${horizon}, 25000)
+per_alpha: 0.6
+per_beta: 0.4
+grad_clip_norm: 10
+seed_steps: 5000
+update_freq: 2
+tau: 0.01
+
+# architecture
+enc_dim: 256
+mlp_dim: 512
+latent_dim: 50
+
+# wandb (insert your own)
+use_wandb: false
+wandb_project: none
+wandb_entity: none
+
+# misc
+seed: 1
+exp_name: default
+eval_freq: 10000
+eval_episodes: 10
+save_video: false
+save_model: false

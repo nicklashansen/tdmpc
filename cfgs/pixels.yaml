@@ -1,0 +1,5 @@
+train_steps: 100000/${action_repeat}
+frame_stack: 3
+num_channels: 32
+img_size: 84
+iterations: 8

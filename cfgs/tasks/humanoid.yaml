@@ -1,0 +1,4 @@
+train_steps: 3000000/${action_repeat}
+action_repeat: 2
+iterations: 12
+latent_dim: 100
