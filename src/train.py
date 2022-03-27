@@ -44,7 +44,7 @@ def evaluate(env, agent, num_episodes, step, env_step, video):
 
 
 def train(cfg):
-	"""Training script for TD-MPC."""
+	"""Training script for TD-MPC. Requires a CUDA-enabled device."""
 	assert torch.cuda.is_available()
 	set_seed(cfg.seed)
 	work_dir = Path().cwd() / __LOGS__ / cfg.task / cfg.modality / cfg.exp_name / str(cfg.seed)
@@ -90,7 +90,7 @@ def train(cfg):
 			L.log(common_metrics, category='eval')
 
 	L.finish(agent)
-	print('\nTraining completed successfully')
+	print('Training completed successfully')
 
 
 if __name__ == '__main__':

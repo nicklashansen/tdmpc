@@ -17,6 +17,7 @@ momentum: 0.1
 
 # learning
 batch_size: 512
+max_buffer_size: 1000000
 horizon: 5
 reward_coef: 0.5
 value_coef: 0.1
@@ -46,7 +47,7 @@ wandb_entity: none
 # misc
 seed: 1
 exp_name: default
-eval_freq: 10000
+eval_freq: 20000
 eval_episodes: 10
 save_video: false
 save_model: false

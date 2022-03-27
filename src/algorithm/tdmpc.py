@@ -25,7 +25,7 @@ class TOLD(nn.Module):
 		for m in [self._Q1, self._Q2]:
 			h.set_requires_grad(m, enable)
 
-	def repr(self, obs):
+	def h(self, obs):
 		"""Encodes an observation into its latent representation (h)."""
 		return self._encoder(obs)
 
@@ -107,13 +107,13 @@ class TDMPC():
 		num_pi_trajs = int(self.cfg.mixture_coef * self.cfg.num_samples)
 		if num_pi_trajs > 0:
 			pi_actions = torch.empty(horizon, num_pi_trajs, self.cfg.action_dim, device=self.device)
-			z = self.model.repr(obs).repeat(num_pi_trajs, 1)
+			z = self.model.h(obs).repeat(num_pi_trajs, 1)
 			for t in range(horizon):
 				pi_actions[t] = self.model.pi(z, self.cfg.min_std)
 				z, _ = self.model.next(z, pi_actions[t])
 
 		# Initialize state and parameters
-		z = self.model.repr(obs).repeat(self.cfg.num_samples+num_pi_trajs, 1)
+		z = self.model.h(obs).repeat(self.cfg.num_samples+num_pi_trajs, 1)
 		mean = torch.zeros(horizon, self.cfg.action_dim, device=self.device)
 		std = 2*torch.ones(horizon, self.cfg.action_dim, device=self.device)
 		if not t0 and hasattr(self, '_prev_mean'):
@@ -161,7 +161,7 @@ class TDMPC():
 			a = self.model.pi(z, self.cfg.min_std)
 			Q = torch.min(*self.model.Q(z, a))
 			pi_loss += -Q.mean() * (self.cfg.rho ** t)
-		
+
 		pi_loss.backward()
 		torch.nn.utils.clip_grad_norm_(self.model._pi.parameters(), self.cfg.grad_clip_norm, error_if_nonfinite=False)
 		self.pi_optim.step()
@@ -171,7 +171,7 @@ class TDMPC():
 	@torch.no_grad()
 	def _td_target(self, next_obs, reward):
 		"""Compute the TD-target from a reward and the observation at the following time step."""
-		next_z = self.model.repr(next_obs)
+		next_z = self.model.h(next_obs)
 		td_target = reward + self.cfg.discount * \
 			torch.min(*self.model_target.Q(next_z, self.model.pi(next_z, self.cfg.min_std)))
 		return td_target
@@ -184,19 +184,18 @@ class TDMPC():
 		self.model.train()
 
 		# Representation
-		z = self.model.repr(self.aug(obs))
+		z = self.model.h(self.aug(obs))
 		zs = [z.detach()]
 
 		consistency_loss, reward_loss, value_loss, priority_loss = 0, 0, 0, 0
 		for t in range(self.cfg.horizon):
 
 			# Predictions
-			Q1_pred, Q2_pred = self.model.Q(z, action[t])
+			Q1, Q2 = self.model.Q(z, action[t])
 			z, reward_pred = self.model.next(z, action[t])
 			with torch.no_grad():
-				next_obs = next_obses[t]
-				next_obs = self.aug(next_obs)
-				next_z = self.model_target.repr(next_obs)
+				next_obs = self.aug(next_obses[t])
+				next_z = self.model_target.h(next_obs)
 				td_target = self._td_target(next_obs, reward[t])
 			zs.append(z.detach())
 
@@ -204,8 +203,8 @@ class TDMPC():
 			rho = (self.cfg.rho ** t)
 			consistency_loss += rho * torch.mean(h.mse(z, next_z), dim=1, keepdim=True)
 			reward_loss += rho * h.mse(reward_pred, reward[t])
-			value_loss += rho * (h.mse(Q1_pred, td_target) + h.mse(Q2_pred, td_target))
-			priority_loss += rho * (h.l1(Q1_pred, td_target) + h.l1(Q2_pred, td_target))
+			value_loss += rho * (h.mse(Q1, td_target) + h.mse(Q2, td_target))
+			priority_loss += rho * (h.l1(Q1, td_target) + h.l1(Q2, td_target))
 
 		# Optimize model
 		total_loss = self.cfg.consistency_coef * consistency_loss.clamp(max=1e4) + \
@@ -221,7 +220,7 @@ class TDMPC():
 		# Update policy + target network
 		pi_loss = self.update_pi(zs)
 		if step % self.cfg.update_freq == 0:
-			h.soft_update_params(self.model, self.model_target, self.cfg.tau)
+			h.ema(self.model, self.model_target, self.cfg.tau)
 
 		self.model.eval()
 		return {'consistency_loss': float(consistency_loss.mean().item()),

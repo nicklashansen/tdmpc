@@ -22,7 +22,7 @@ def make_dir(dir_path):
 	return dir_path
 
 
-def print_run(cfg):
+def print_run(cfg, reward=None):
 	"""Pretty-printing of run information. Call at start of training."""
 	prefix, color, attrs = '  ', 'green', ['bold']
 	def limstr(s, maxlen=32):
@@ -34,6 +34,8 @@ def print_run(cfg):
 		   ('observations', 'x'.join([str(s) for s in cfg.obs_shape])),
 		   ('actions', cfg.action_dim),
 		   ('experiment', cfg.exp_name)]
+	if reward is not None:
+		kvs.append(('episode reward', colored(str(int(reward)), 'white', attrs=['bold'])))
 	w = np.max([len(limstr(str(kv[1]))) for kv in kvs]) + 21
 	div = '-'*w
 	print(div)
@@ -82,6 +84,7 @@ class Logger(object):
 		self._save_model = cfg.save_model
 		self._group = cfg_to_group(cfg)
 		self._seed = cfg.seed
+		self._cfg = cfg
 		self._eval = []
 		print_run(cfg)
 		project, entity = cfg.get('wandb_project', 'none'), cfg.get('wandb_entity', 'none')
@@ -121,6 +124,7 @@ class Logger(object):
 				self._wandb.log_artifact(artifact)
 		if self._wandb:
 			self._wandb.finish()
+		print_run(self._cfg, self._eval[-1][-1])
 
 	def _format(self, key, value, ty):
 		if ty == 'int':

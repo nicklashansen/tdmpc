@@ -245,7 +245,7 @@ class DefaultDictWrapper(gym.Wrapper):
 
 def make_env(cfg):
 	"""
-	Make environment for TD-MPC experiments.
+	Make DMControl environment for TD-MPC experiments.
 	Adapted from https://github.com/facebookresearch/drqv2
 	"""
 	domain, task = cfg.task.replace('-', '_').split('_', 1)
@@ -271,6 +271,7 @@ def make_env(cfg):
 	env = TimeStepToGymWrapper(env, domain, task, cfg.action_repeat, cfg.modality)
 	env = DefaultDictWrapper(env)
 
+	# Convenience
 	cfg.obs_shape = tuple(int(x) for x in env.observation_space.shape)
 	cfg.action_shape = tuple(int(x) for x in env.action_space.shape)
 	cfg.action_dim = env.action_space.shape[0]

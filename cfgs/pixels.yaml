@@ -1,5 +1,6 @@
-train_steps: 100000/${action_repeat}
+train_steps: 3000000/${action_repeat}
 frame_stack: 3
 num_channels: 32
 img_size: 84
-iterations: 8
+lr: 3e-4
+batch_size: 256
