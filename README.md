@@ -7,11 +7,19 @@ Original PyTorch implementation of **TD-MPC** from
 [Nicklas Hansen](https://nicklashansen.github.io), [Xiaolong Wang](https://xiaolonw.github.io)\*, [Hao Su](https://cseweb.ucsd.edu/~haosu)\*
 
 
+<p align="center">
+  <br><img src='media/ae591483.png' width="600"/><br>
+   <a href="https://arxiv.org/abs/2203.04955">[Paper]</a>&emsp;<a href="https://nicklashansen.github.io/td-mpc">[Website]</a>
+</p>
+
 
 ## Method
 
 **TD-MPC** is a framework for model predictive control (MPC) using a Task-Oriented Latent Dynamics (TOLD) model and a terminal value function *learned jointly* by temporal difference (TD) learning. TD-MPC plans actions entirely in latent space using the TOLD model, which learns compact task-centric representations from either state or image inputs. TD-MPC solves challenging Humanoid and Dog locomotion tasks in 1M environment steps.
 
+<p align="center">
+  <img src='media/d818bbc7.png' width="600"/>
+</p>
 
 
 ## Citation
@@ -51,7 +59,7 @@ The training script supports both local logging as well as cloud-based logging w
 
 ## Changelog
 
-* **[03-27-2022]** Reduce memory usage in pixel experiments by 6x. Code improvements. Refactoring. Update default pixel hyperparameters.
+* **[03-27-2022]** Reduced memory usage in pixel experiments by 6x. Code improvements. Refactoring. Update default pixel hyperparameters.
 * **[03-10-2022]** Initial code release.
 
 ## License & Acknowledgements
