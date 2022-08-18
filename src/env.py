@@ -179,18 +179,26 @@ class TimeStepToGymWrapper(object):
 			obs_shp = []
 			for v in env.observation_spec().values():
 				try:
-					shp = v.shape[0]
+					shp = np.prod(v.shape)
 				except:
 					shp = 1
 				obs_shp.append(shp)
 			obs_shp = (np.sum(obs_shp),)
 			assert modality != 'pixels'
 		act_shp = env.action_spec().shape
+		obs_dtype = np.float32 if modality != 'pixels' else np.uint8
 		self.observation_space = gym.spaces.Box(
-			low=np.full(obs_shp, -np.inf if modality != 'pixels' else env.observation_spec().minimum),
-			high=np.full(obs_shp, np.inf if modality != 'pixels' else env.observation_spec().maximum),
+			low=np.full(
+				obs_shp,
+				-np.inf if modality != 'pixels' else env.observation_spec().minimum,
+				dtype=obs_dtype),
+			high=np.full(
+				obs_shp,
+				np.inf if modality != 'pixels' else env.observation_spec().maximum,
+				dtype=obs_dtype),
 			shape=obs_shp,
-			dtype=np.float32 if modality != 'pixels' else np.uint8)
+			dtype=obs_dtype,
+		)
 		self.action_space = gym.spaces.Box(
 			low=np.full(act_shp, env.action_spec().minimum),
 			high=np.full(act_shp, env.action_spec().maximum),
