@@ -127,7 +127,7 @@ class TDMPC():
 				actions = torch.cat([actions, pi_actions], dim=1)
 
 			# Compute elite actions
-			value = self.estimate_value(z, actions, horizon)
+			value = self.estimate_value(z, actions, horizon).nan_to_num_(0)
 			elite_idxs = torch.topk(value.squeeze(1), self.cfg.num_elites, dim=0).indices
 			elite_value, elite_actions = value[elite_idxs], actions[:, elite_idxs]
 
