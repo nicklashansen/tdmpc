@@ -28,19 +28,20 @@ def set_seed(seed):
 
 def evaluate(env, agent, num_episodes, step, env_step, video):
 	"""Evaluate a trained agent and optionally save a video."""
-	episode_rewards = []
+	episode_rewards, episode_success = [], []
 	for i in range(num_episodes):
 		obs, done, ep_reward, t = env.reset(), False, 0, 0
 		if video: video.init(env, enabled=(i==0))
 		while not done:
 			action = agent.plan(obs, eval_mode=True, step=step, t0=t==0)
-			obs, reward, done, _ = env.step(action.cpu().numpy())
+			obs, reward, done, info = env.step(action.cpu().numpy())
 			ep_reward += reward
 			if video: video.record(env)
 			t += 1
 		episode_rewards.append(ep_reward)
+		episode_success.append(int(info.get('success', 0)))
 		if video: video.save(env_step)
-	return np.nanmean(episode_rewards)
+	return np.nanmean(episode_rewards), np.nanmean(episode_success)
 
 
 def train(cfg):
@@ -86,7 +87,8 @@ def train(cfg):
 
 		# Evaluate agent periodically
 		if env_step % cfg.eval_freq == 0:
-			common_metrics['episode_reward'] = evaluate(env, agent, cfg.eval_episodes, step, env_step, L.video)
+			common_metrics['episode_reward'], common_metrics['episode_success'] = \
+				evaluate(env, agent, cfg.eval_episodes, step, env_step, L.video)
 			L.log(common_metrics, category='eval')
 
 	L.finish(agent)

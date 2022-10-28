@@ -6,6 +6,7 @@ from dm_control import suite
 from dm_control.suite.wrappers import action_scale, pixels
 from dm_env import StepType, specs
 import gym
+from gym.wrappers import TimeLimit
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
@@ -242,6 +243,14 @@ class TimeStepToGymWrapper(object):
 		return self.env.physics.render(height, width, camera_id)
 
 
+class MetaWorldWrapper(gym.Wrapper):
+	def __init__(self, env):
+		gym.Wrapper.__init__(self, env)
+
+	def render(self, mode=None, height=384, width=384, camera_id=None):
+		return self.env.render(offscreen=True, resolution=(width, height))
+
+
 class DefaultDictWrapper(gym.Wrapper):
 	def __init__(self, env):
 		gym.Wrapper.__init__(self, env)
@@ -257,26 +266,33 @@ def make_env(cfg):
 	Adapted from https://github.com/facebookresearch/drqv2
 	"""
 	domain, task = cfg.task.replace('-', '_').split('_', 1)
-	domain = dict(cup='ball_in_cup').get(domain, domain)
-	assert (domain, task) in suite.ALL_TASKS
-	env = suite.load(domain,
-					 task,
-					 task_kwargs={'random': cfg.seed},
-					 visualize_reward=False)
-	env = ActionDTypeWrapper(env, np.float32)
-	env = ActionRepeatWrapper(env, cfg.action_repeat)
-	env = action_scale.Wrapper(env, minimum=-1.0, maximum=+1.0)
+	if domain == 'metaworld':
+		import metaworld
+		env = metaworld.envs.ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE[task.replace('_', '-')+'-v2-goal-observable'](seed=cfg.seed)
+		env = MetaWorldWrapper(env)
+		env = TimeLimit(env, max_episode_steps=cfg.episode_length)
+	else:
+		domain = dict(cup='ball_in_cup').get(domain, domain)
+		assert (domain, task) in suite.ALL_TASKS
+		env = suite.load(domain,
+						task,
+						task_kwargs={'random': cfg.seed},
+						visualize_reward=False)
+		env = ActionDTypeWrapper(env, np.float32)
+		env = ActionRepeatWrapper(env, cfg.action_repeat)
+		env = action_scale.Wrapper(env, minimum=-1.0, maximum=+1.0)
 
-	if cfg.modality=='pixels':
-		if (domain, task) in suite.ALL_TASKS:
-			camera_id = dict(quadruped=2).get(domain, 0)
-			render_kwargs = dict(height=84, width=84, camera_id=camera_id)
-			env = pixels.Wrapper(env,
-								pixels_only=True,
-								render_kwargs=render_kwargs)
-		env = FrameStackWrapper(env, cfg.get('frame_stack', 1), cfg.modality)
-	env = ExtendedTimeStepWrapper(env)
-	env = TimeStepToGymWrapper(env, domain, task, cfg.action_repeat, cfg.modality)
+		if cfg.modality=='pixels':
+			if (domain, task) in suite.ALL_TASKS:
+				camera_id = dict(quadruped=2).get(domain, 0)
+				render_kwargs = dict(height=84, width=84, camera_id=camera_id)
+				env = pixels.Wrapper(env,
+									pixels_only=True,
+									render_kwargs=render_kwargs)
+			env = FrameStackWrapper(env, cfg.get('frame_stack', 1), cfg.modality)
+		env = ExtendedTimeStepWrapper(env)
+		env = TimeStepToGymWrapper(env, domain, task, cfg.action_repeat, cfg.modality)
+
 	env = DefaultDictWrapper(env)
 
 	# Convenience

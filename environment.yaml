@@ -12,7 +12,10 @@ dependencies:
     - omegaconf
     - gym==0.21.0
     - dm-control==0.0.403778684
+    - git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld
     - pandas
     - wandb
     - moviepy
+    - mujoco-py==2.1.2.14
+    - patchelf==0.15.0.0
     - imageio

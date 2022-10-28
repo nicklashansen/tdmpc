@@ -59,6 +59,7 @@ The training script supports both local logging as well as cloud-based logging w
 
 ## Changelog
 
+* **[10-27-2022]** Added support for Meta-World tasks; `environment.yaml` has been updated. This change should be considered experimental.
 * **[08-29-2022]** Added safeguard against NaNs in rare cases. Fixed an issue that caused multi-dimensional observation spaces to be inferred incorrectly.
 * **[03-27-2022]** Reduced memory usage in pixel experiments by 6x. Code improvements. Refactoring. Update default pixel hyperparameters.
 * **[03-10-2022]** Initial code release.
