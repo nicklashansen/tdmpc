@@ -1,5 +1,9 @@
 # Temporal Difference Learning for Model Predictive Control
 
+**(Nov 2023) Announcement: TD-MPC2 is out! Visit [https://github.com/nicklashansen/tdmpc2](https://github.com/nicklashansen/tdmpc2) for more information.**
+
+----
+
 Original PyTorch implementation of **TD-MPC** from
 
 [Temporal Difference Learning for Model Predictive Control](https://arxiv.org/abs/2203.04955) by
